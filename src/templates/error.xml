@@ -1,0 +1,6 @@
+<error code="{{code}}">
+    <code>{{code}}</code>
+    <message>{{message}}</message>
+    <details>{{details}}</details>
+    <timestamp>{{timestamp}}</timestamp>
+</error>

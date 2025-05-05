@@ -1,0 +1,16 @@
+{%include "snippets/head.xml"%}
+<caps>
+    {%include "fragments/caps/server.xml"%}
+    {%include "fragments/caps/limits.xml"%}
+    {%include "fragments/caps/registration.xml"%}
+    <searching>
+    {%- for search in searching %}
+        {% include "fragments/caps/search.xml" -%}
+    {% endfor %}
+    </searching>
+    <categories>
+    {%- for category in categories %}
+        {% include "fragments/caps/category.xml" -%}
+    {% endfor %}
+    </categories>
+</caps>

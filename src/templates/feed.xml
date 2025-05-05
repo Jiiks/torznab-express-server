@@ -1,0 +1,14 @@
+{%include "snippets/head.xml"%}
+<rss version="1.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:torznab="http://torznab.com/schemas/2015/feed">
+    <channel>
+        <title>{{channel.title}}</title>
+        <description>{{channel.description}}</description>
+        <link>{{channel.link}}</link>
+        <language>{{channel.language}}</language>
+        <items>
+        {%- for item in items -%} 
+            {% include "fragments/feed/item.xml" -%}
+        {% endfor %}
+        </items>
+    </channel>
+</rss>

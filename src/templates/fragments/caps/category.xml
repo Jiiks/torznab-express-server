@@ -1,0 +1,9 @@
+{%- if category.subcategories -%}
+        <category id="{{ category.id }}" name="{{ category.name }}">
+{%- for subcat in category.subcategories %}
+            <subcat id="{{subcat.id}}" name="{{subcat.name}}"/>
+{%- endfor %}
+        </category>
+{%- else -%}
+        <category id="{{ category.id }}" name="{{ category.name }}"/>
+{%- endif %}

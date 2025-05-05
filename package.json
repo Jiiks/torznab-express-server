@@ -1,0 +1,35 @@
+{
+  "name": "torznab",
+  "version": "0.1.0",
+  "description": "Node Torznab server",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "npx": "npx tsx src/index.ts"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "nunjucks": "^3.2.4"
+  },
+  "imports": {
+    "#constants": "./src/constants.mts",
+    "#renderer": "./app/renderer.mts",
+    "#providers": "./app/providers/index.mts",
+    "#tn": "./src/tn/index.mts",
+    "#tn-caps": "./src/tv/caps.mts"
+  },
+  "devDependencies": {
+    "@types/cheerio": "^0.22.35",
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.15.3",
+    "cheerio": "^1.0.0",
+    "express": "^5.1.0",
+    "http-status-codes": "^2.3.0",
+    "p-limit": "^6.2.0",
+    "reflect-metadata": "^0.2.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  }
+}

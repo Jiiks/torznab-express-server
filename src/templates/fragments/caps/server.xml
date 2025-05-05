@@ -1,0 +1,1 @@
+<server version="{{server.version}}" title="{{server.title}}" strapline="{{server.strapline}}" url="{{server.url}}"/>

@@ -1,0 +1,25 @@
+
+            <item>
+                <title>{{item.title}}</title>
+                <shortname>{{item.short_name}}</shortname>
+                <language>{{item.language}}</language>
+                <guid isPermaLink="true">{{item.permalink}}</guid>
+                <link>{{item.link}}</link>
+                <comments>{{item.link}}</comments>
+                <pubDate>{{item.pub_date}}</pubDate>
+                <rawDate>{{item.raw_date}}</rawDate>
+                <lastChecked>{{item.last_checked}}</lastChecked>
+                <downloads>{{item.downloads}}</downloads>
+                <size>{{item.size}}</size>
+                <category>{{item.category}}</category>
+                <image/>
+                <uploader link="{{item.uploader_link}}">{{item.uploader}}</uploader>
+                <enclosure url="{{item.magnet_link}}" length="{{item.size}}" type="{{item.content_type}}"/>
+                <torznab:attr name="magneturl" value="{{item.magnet_link}}"/>
+                <torznab:attr name="seeders" value="{{item.seeds}}"/>
+                <torznab:attr name="peers" value="{{item.peers}}"/>
+                <torznab:attr name="leechers" value="{{item.peers}}"/>
+                <torznab:attr name="infohash" value="{{item.info_hash}}"/>
+                <torznab:attr name="category" value="{{item.category_id}}"/>
+                <torznab:attr name="type" value="{{item.type}}"/>
+            </item>

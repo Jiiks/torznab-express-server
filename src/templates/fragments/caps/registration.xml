@@ -1,0 +1,1 @@
+<registration available="{{ registration.available | boolToYesNo }}" open="{{ registration.open | boolToYesNo }}"/>
