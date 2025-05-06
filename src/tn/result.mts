@@ -18,7 +18,7 @@ class Result {
     items: Item[];
     response: Response;
 
-    constructor(response: Response, channel: Channel, items: Item[] = []) {
+    constructor(response: Response, channel?: Channel, items: Item[] = []) {
         this.response = response;
         this.channel = channel;
         this.items = items;

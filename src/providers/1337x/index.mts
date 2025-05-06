@@ -4,6 +4,35 @@ import pLimit from "p-limit";
 
 
 const BASE_URL = "https://1337x.to";
+const SEARCH_DEFAULT = `${BASE_URL}/top-100`;
+const TVSEARCH_DEFAULT = `${BASE_URL}/popular-tv`;
+const CATEGORY_SEARCH_TEMPLATE = (query: string, category: string, page: number) => `${BASE_URL}/category-search/${query}/${category}/${page}/`;
+
+const CATEGORY_MOVIES = "Movies";
+const CATEGORY_TV = "TV";
+const CATEGORY_GAMES = "Games";
+const CATEGORY_MUSIC = "Music";
+const CATEGORY_APPS = "Apps";
+const CATEGORY_DOCS = "Documentaries";
+const CATEGORY_ANIME = "Anime";
+const CATEGORY_XXX = "XXX";
+const CATEGORY_OTHER = "Other";
+
+function resolveCategory(cats: string) {
+    const categoryId = parseInt(cats.split(",")[0]) || 2000;
+    if(categoryId >= 1000 && categoryId <= 1180 || categoryId == 4050) return CATEGORY_GAMES;
+    if(categoryId >= 2000 && categoryId <= 2090) return CATEGORY_MOVIES;
+    if(categoryId >= 3000 && categoryId <= 3060) return CATEGORY_MUSIC;
+
+    if(categoryId == 5070) return CATEGORY_ANIME;
+    if(categoryId == 5080) return CATEGORY_DOCS;
+    if(categoryId >= 5000 && categoryId <= 5090) return CATEGORY_TV;
+
+    if(categoryId >= 6000 && categoryId <= 6090) return CATEGORY_XXX;
+    if(categoryId >= 4000 && categoryId <= 4070) return CATEGORY_APPS;
+
+    return CATEGORY_OTHER;
+}
 
 function convertToBytes(sizeStr: string): number {
     const units = {
@@ -88,14 +117,8 @@ class MyCaps extends Caps.CapsBase {
 
 @Provider({ name: "1337x" })
 class MyProvider extends ProviderBase {
-    async search(query: any): Promise<Result> {
-        const { q } = query;
-        const testurl = q ? '/top-100' : `/search/${q}/1/`;
-        const res = await fetch(BASE_URL + testurl);
-        if(res.status !== 200) return new Result(res, null, null);
-        const text = await res.text();
-        const $ = cheerio.load(text);
 
+    torrentList($: cheerio.Root) {
         const torrent_list = $('td.coll-1');
         const seeders_list = $('td.coll-2');
         const leechers_list = $('td.coll-3');
@@ -103,6 +126,46 @@ class MyProvider extends ProviderBase {
         const date_list = $('td.coll-date');
         const uploader_list = $('td.coll-5');
 
+        return {
+            torrent_list, seeders_list, leechers_list, size_list, date_list, uploader_list
+        };
+    }
+
+    createItem(info: any) : Item {
+        return new Item(
+            info.title,
+            "short name",
+            info.lang,
+            true,
+            info.href,
+            new Date().toUTCString(),
+            info.date_uploaded,
+            new Date().toUTCString(),
+            parseInt(info.downloads, 0),
+            info.category,
+            2000,
+            info.magnet,
+            convertToBytes(info.sizeString),
+            'application/x-bittorrent;x-scheme-handler/magnet',
+            info.seeds,
+            info.peers,
+            info.type,
+            info.info_hash,
+            info.uploader,
+            info.uploader_link
+        );
+    }
+
+    async _search(url: string) : Promise<Result> {
+        const res = await fetch(url);
+        if(res.status !== 200) {
+            return new Result(res);
+        }
+
+        const text = await res.text();
+        const $ = cheerio.load(text);
+
+        const { torrent_list, seeders_list, leechers_list, size_list, date_list, uploader_list } = this.torrentList($);
         const limit = pLimit(3); // Limit to 3 parallel requests
 
         const promises = torrent_list.map((index, torrent) => limit(async () => {
@@ -112,30 +175,16 @@ class MyProvider extends ProviderBase {
                 category, type, lang, uploader, uploader_link,
                 downloads, last_checked, date_uploaded
             } = await fetchDetails($(torrent));
+
+            const seeds = parseInt(seeders_list.eq(index).text(), 0);
+            const peers = parseInt(leechers_list.eq(index).text(), 0);
             const sizeString = size_list.eq(index).contents().first().text();
-            return new Item(
-                title,
-                "short name",
-                lang,
-                true,
-                href,
-                new Date().toUTCString(),
-                date_uploaded,
-                new Date().toUTCString(),
-                parseInt(downloads, 0),
-                category,
-                2000,
-                magnet,
-                convertToBytes(sizeString),
-                'application/x-bittorrent;x-scheme-handler/magnet',
-                parseInt(seeders_list.eq(index).text(), 0),
-                parseInt(leechers_list.eq(index).text(), 0),
-                type,
-                info_hash,
-                uploader,
-                uploader_link
-            );
+
+            return this.createItem({
+                title, lang, href, date_uploaded, downloads, category, magnet, sizeString, seeds, peers, type, info_hash, uploader, uploader_link
+            });
         }));
+
         const results = await Promise.allSettled(promises);
 
         const items = [];
@@ -147,8 +196,23 @@ class MyProvider extends ProviderBase {
             }
         });
     
-        const result = new Result(res, channelInfo, items)
+        const result = new Result(res, channelInfo, items);
         return result;
+    }
+
+    async search(req: any): Promise<Result> {
+        const { q, cat } = req.query;
+        const category = resolveCategory(cat);
+        const url = q ? CATEGORY_SEARCH_TEMPLATE(q, category, 1) : SEARCH_DEFAULT;
+        const res = await this._search(url);
+        return res;
+    }
+
+    async tvsearch(query: any) : Promise<Result> {
+        const { q } = query;
+        const url = q ? CATEGORY_SEARCH_TEMPLATE(q, 'TV', 1) : TVSEARCH_DEFAULT;
+        const res = await this._search(url);
+        return res;
     }
 }
 

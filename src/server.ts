@@ -17,6 +17,15 @@ function saveCfg() {
     fs.writeFileSync(fullPath, JSON.stringify(config, null, 4));
 }
 
+function sendError(res: Response<any, Record<string, any>, number>, response: any) {
+    res.set(response.status).send(render("error", {
+        code: response.status,
+        message: response.statusText,
+        details: response.statusText,
+        timestamp: new Date().toISOString()
+    }));
+}
+
 function sendUnauthorizedError(res: Response<any, Record<string, any>, number>, details: string) {
     res.status(401).send(render("error", {
         code: 401,
@@ -42,4 +51,8 @@ server.use(async(req, res, next) => {
     return next();
 });
 
-export { server, servercfg, saveCfg };
+function send(res: Response<any, Record<string, any>, number>, template: string, data: any, code: number = 200) : Response<any, Record<string, any>, number> {
+    return res.set(code).send(render(template, data));
+}
+
+export { server, servercfg, saveCfg, sendError, send };

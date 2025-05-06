@@ -1,33 +1,28 @@
 import { __filename, __dirname } from '#constants';
-import { Item, render, Channel, Result, ProviderBase } from '#tn';
-import { StatusCodes, getStatusCode, getReasonPhrase } from 'http-status-codes';
-import { server, servercfg, saveCfg } from './server.ts';
+import { render, Result, ProviderBase } from '#tn';
+import { server, servercfg, send, sendError } from './server.ts';
 import { default as providers } from './providers/index.mts';
 import { Request } from 'express';
+import { Response } from "express-serve-static-core";
 import readline from 'readline';
 import bcrypt from 'bcrypt';
 import fs from 'fs';
 
 
 interface CustomRequest extends Request {
-    provider?: ProviderBase; // Adjust the type to match your provider structure
+    provider?: ProviderBase;
     caps?: object
 }
 
 server.use("/api/v1/:providername", (req: CustomRequest, res, next) => {
-    console.log('provider query: ', req.query);
-    
     const { providername } = req.params;
     if(providers[providername] === undefined) {
         console.log("Provider does not exist:", providername);
-        const error = {
-            code: 404,
+        return sendError(res, {
+            status: 404,
             message: `Provider not found`,
-            details: `Provider '${providername}' does not exist`,
-            timestamp: new Date().toISOString()
-        };
-        res.status(404).send(render("error", error));
-        return;
+            details: `Provider '${providername}' does not exist`
+        });
     }
 
     if(providers[providername].__instance === undefined) {
@@ -50,28 +45,20 @@ server.get('/api/v1/:provider', async (req: CustomRequest, res) => {
         res.set(200).send(render("caps", caps)); return;
     }
     if(t === 'search') {
-        const result = await provider.search({ q });
+        const result = await provider.search(req);
         const { response, channel, items } = result;
-        if(response.status !== 200) {
-            console.log(response.status);
-            res.set(response.status).send(render("error", {
-                code: response.status,
-                message: response.statusText,
-                details: response.statusText,
-                timestamp: new Date().toISOString()
-            }));
-            return;
-        }
-        res.set(response.status).send(render("feed", { channel, items }));
+        if(response.status !== 200) return sendError(res, response);
+        send(res, 'feed', { channel, items });
         return;
     }
 
     const ts = t.toString();
 
     if(provider[ts]) {
-        const result: Result = await provider[ts]();
+        const result: Result = await provider[ts](req);
         const { response, channel, items } = result;
-        res.set(response.status).send(render("feed", { channel, items }));
+        if(response.status !== 200) return sendError(res, response);
+        send(res, 'feed', { channel, items });
         return;
     }
 
@@ -94,7 +81,6 @@ function start() {
 }
 
 async function setup() {
-    console.log(process.argv);
     if(!fs.existsSync(".env") || process.argv.includes('--reset')) {
         const rl = readline.createInterface({
             input: process.stdin,
