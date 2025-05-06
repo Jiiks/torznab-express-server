@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "npx": "npx tsx src/index.ts"
+    "npx": "npx tsx src/index.ts",
+    "npx-reset": "npx tsx src/index.ts --reset"
   },
   "author": "",
   "license": "ISC",
@@ -21,9 +22,11 @@
     "#tn-caps": "./src/tv/caps.mts"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/cheerio": "^0.22.35",
     "@types/express": "^5.0.1",
     "@types/node": "^22.15.3",
+    "bcrypt": "^5.1.1",
     "cheerio": "^1.0.0",
     "express": "^5.1.0",
     "http-status-codes": "^2.3.0",

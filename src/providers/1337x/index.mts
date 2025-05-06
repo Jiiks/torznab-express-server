@@ -70,10 +70,17 @@ class MyCaps extends Caps.CapsBase {
                 new Caps.Search("tv-search", true, ["q", "season", "ep"])
             ],
             [
-                new Caps.Category(5000, "TV"),
+                new Caps.Category(5000, "TV", [
+                    new Caps.Category(5040, "TV/HD"),
+                    new Caps.Category(5070, "TV/Anime")
+                ]),
                 new Caps.Category(2000, "Movies", [
                     new Caps.Category(2010, "HD")
-                ])
+                ]),
+                new Caps.Category(4000, "PC", [
+                    new Caps.Category(4050, "PC/Games")
+                ]),
+                new Caps.Category(3000, "Audio")
             ]
         );
     }
@@ -83,7 +90,7 @@ class MyCaps extends Caps.CapsBase {
 class MyProvider extends ProviderBase {
     async search(query: any): Promise<Result> {
         const { q } = query;
-        const testurl = `/search/${q}/1/`;
+        const testurl = q ? '/top-100' : `/search/${q}/1/`;
         const res = await fetch(BASE_URL + testurl);
         if(res.status !== 200) return new Result(res, null, null);
         const text = await res.text();
@@ -112,9 +119,9 @@ class MyProvider extends ProviderBase {
                 lang,
                 true,
                 href,
-                new Date(),
+                new Date().toUTCString(),
                 date_uploaded,
-                new Date(),
+                new Date().toUTCString(),
                 parseInt(downloads, 0),
                 category,
                 2000,
@@ -142,10 +149,6 @@ class MyProvider extends ProviderBase {
     
         const result = new Result(res, channelInfo, items)
         return result;
-    }
-    
-    render() {
-        console.log('render');
     }
 }
 

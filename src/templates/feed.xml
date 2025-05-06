@@ -5,10 +5,8 @@
         <description>{{channel.description}}</description>
         <link>{{channel.link}}</link>
         <language>{{channel.language}}</language>
-        <items>
         {%- for item in items -%} 
             {% include "fragments/feed/item.xml" -%}
         {% endfor %}
-        </items>
     </channel>
 </rss>
